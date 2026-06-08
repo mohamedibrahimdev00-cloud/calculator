@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آلة حاسبة متطورة ومبسطة</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #17171c;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .calculator {
+            background-color: #202124;
+            padding: 24px;
+            border-radius: 16px;
+            width: 450px;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.5);
+        }
+        .display-container {
+            border: 1px solid #3c4043;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        #display {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #e8eaed;
+            font-size: 2.2rem;
+            text-align: right;
+            outline: none;
+        }
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            background-color: #303134;
+            color: #e8eaed;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        button:hover {
+            background-color: #3c4043;
+        }
+        /* أزرار sin, cos, tan */
+        button.scientific {
+            background-color: #3c4043;
+            color: #dae1e7;
+        }
+        button.scientific:hover {
+            background-color: #4f5357;
+        }
+        /* أزرار الأرقام */
+        button.number {
+            background-color: #202124;
+            border: 1px solid #3c4043;
+        }
+        button.number:hover {
+            background-color: #303134;
+        }
+        /* زر يساوي الأزرق */
+        button.equal {
+            background-color: #8ab4f8;
+            color: #202124;
+            font-weight: bold;
+        }
+        button.equal:hover {
+            background-color: #aecbfa;
+        }
+        .math-solver-btn {
+            background-color: #303134;
+            color: #e8eaed;
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 20px;
+            border: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <!-- شاشة العرض والنتيجة -->
+    <div class="display-container">
+        <input type="text" id="display" value="0" readonly>
+    </div>
+    
+    <!-- لوحة الأزرار المنظمة -->
+    <div class="buttons-grid">
+        <!-- الصف الأول -->
+        <button class="scientific" onclick="clearAll()">AC</button>
+        <button class="scientific" onclick="backspace()">⌫</button>
+        <button class="scientific" onclick="input('%')">%</button>
+        <button class="scientific" onclick="input('/')">÷</button>
+        
+        <!-- الصف الثاني (دوال sin, cos, tan) -->
+        <button class="scientific" onclick="input('sin(')">sin</button>
+        <button class="scientific" onclick="input('cos(')">cos</button>
+        <button class="scientific" onclick="input('tan(')">tan</button>
+        <button class="scientific" onclick="input('*')">×</button>
+        
+        <!-- الصف الثالث -->
+        <button class="number" onclick="input('7')">7</button>
+        <button class="number" onclick="input('8')">8</button>
+        <button class="number" onclick="input('9')">9</button>
+        <button class="scientific" onclick="input('-')">-</button>
+        
+        <!-- الصف الرابع -->
+        <button class="number" onclick="input('4')">4</button>
+        <button class="number" onclick="input('5')">5</button>
+        <button class="number" onclick="input('6')">6</button>
+        <button class="scientific" onclick="input('+')">+</button>
+        
+        <!-- الصف الخامس -->
+        <button class="number" onclick="input('1')">1</button>
+        <button class="number" onclick="input('2')">2</button>
+        <button class="number" onclick="input('3')">3</button>
+        <button class="equal" onclick="calculate()" style="grid-row: span 2;">=</button>
+        
+        <!-- الصف السادس -->
+        <button class="number" onclick="input('0')" style="grid-column: span 2;">0</button>
+        <button class="number" onclick="input('.')">.</button>
+    </div>
+
+   
+<script>
+    let display = document.getElementById('display');
+
+    function input(value) {
+        if (display.value === '0' && value !== '.') {
+            display.value = value;
+        } else {
+            display.value += value;
+        }
+    }
+
+    function clearAll() {
+        display.value = '0';
+    }
+
+    function backspace() {
+        display.value = display.value.slice(0, -1);
+        if (display.value === '') display.value = '0';
+    }
+
+    function calculate() {
+        try {
+            let expression = display.value;
+            
+            // تحويل العمليات لتتوافق مع لغة الجافا سكريبت وتحسب بالدرجات (Deg)
+            expression = expression.replace(/sin\(/g, 'Math.sin(Math.PI/180*');
+            expression = expression.replace(/cos\(/g, 'Math.cos(Math.PI/180*');
+            expression = expression.replace(/tan\(/g, 'Math.tan(Math.PI/180*');
+            
+            // التأكد من إغلاق الأقواس تلقائياً للدوال إذا نسي المستخدم إغلاقها
+            let openBrackets = (expression.match(/\(/g) || []).length;
+            let closeBrackets = (expression.match(/\)/g) || []).length;
+            while(openBrackets > closeBrackets) {
+                expression += ')';
+                closeBrackets++;
+            }
+            
+            let result = eval(expression);
+            
+            // معالجة الأرقام العشرية الطويلة ليظهر الناتج بشكل منسق
+            display.value = Number(result.toFixed(8)).toString();
+        } catch (error) {
+            display.value = 'خطأ';
+        }
+    }
+</script>
+
+</body>
+</html>
+
